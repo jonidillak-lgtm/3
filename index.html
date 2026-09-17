@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media 2: Arsiran & Daerah Irisan</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; padding: 20px; }
+        .container { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; gap: 20px; max-width: 900px; width: 100%; }
+        canvas { border: 1px solid #ddd; border-radius: 8px; background-color: #fafafa; }
+        .controls { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        button { background-color: #fff; border: 1px solid #ccc; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; text-align: left; }
+        button.active { background-color: #e3f2fd; border-color: #3498db; }
+        .note { font-size: 13px; color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div><canvas id="canvas" width="450" height="450"></canvas></div>
+        <div class="controls">
+            <h3>Media 2: Daerah Arsiran & DP</h3>
+            <p style="font-size:14px; color:#555;">Garis batas sudah terbentuk. Mari uji titik (0,0) untuk menentukan arah arsiran.</p>
+            <div style="border-left: 5px solid #3498db; padding-left: 10px;">
+                <button onclick="toggle('arsir1', this)">1. Arsir x + y ≤ 20</button>
+                <div class="note">Uji (0,0) -> 0 ≤ 20 (Benar). Arsir menuju titik (0,0).</div>
+            </div>
+            <div style="border-left: 5px solid #e74c3c; padding-left: 10px;">
+                <button onclick="toggle('arsir2', this)">2. Arsir x + 2y ≥ 24</button>
+                <div class="note">Uji (0,0) -> 0 ≥ 24 (Salah). Arsir menjauhi titik (0,0).</div>
+            </div>
+            <div style="border-left: 5px solid #2ecc71; padding-left: 10px; margin-top:10px;">
+                <button onclick="toggle('irisan', this)">3. Tentukan Daerah Irisan (DP)</button>
+                <div class="note">Area yang disepakati oleh seluruh pertidaksamaan.</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const ctx = document.getElementById('canvas').getContext('2d');
+        const padding = 40, max = 30, w = 450, h = 450;
+        let state = { arsir1: false, arsir2: false, irisan: false };
+        function getX(x) { return padding + (x * ((w - padding * 2) / max)); }
+        function getY(y) { return h - padding - (y * ((h - padding * 2) / max)); }
+        function drawGrid() {
+            ctx.clearRect(0, 0, w, h); ctx.strokeStyle = '#e0e0e0'; ctx.lineWidth = 1; ctx.font = '10px Arial'; ctx.fillStyle = '#7f8c8d';
+            for (let i = 0; i <= max; i += 2) {
+                ctx.beginPath(); ctx.moveTo(getX(i), padding); ctx.lineTo(getX(i), h - padding); ctx.stroke();
+                if (i !== 0) ctx.fillText(i, getX(i) - 6, h - padding + 15);
+                ctx.beginPath(); ctx.moveTo(padding, getY(i)); ctx.lineTo(w - padding, getY(i)); ctx.stroke();
+                if (i !== 0) ctx.fillText(i, padding - 22, getY(i) + 4);
+            }
+            ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(padding, padding); ctx.lineTo(padding, h - padding); ctx.lineTo(w - padding, h - padding); ctx.stroke();
+            ctx.fillStyle = '#2c3e50'; ctx.font = 'bold 12px Arial'; ctx.fillText("Es Teh (x)", w - padding - 30, h - padding + 30); ctx.fillText("Boba (y)", padding - 35, padding - 10);
+        }
+        function drawLine(x1, y1, x2, y2, color, label, lx, ly) {
+            ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
+            const yStart = y1 + (0 - x1) * (y2 - y1) / (x2 - x1), yEnd = y1 + (max - x1) * (y2 - y1) / (x2 - x1);
+            ctx.moveTo(getX(0), getY(yStart)); ctx.lineTo(getX(max), getY(yEnd)); ctx.stroke();
+            ctx.fillStyle = color; ctx.font = 'bold 14px Arial'; ctx.fillText(label, getX(lx), getY(ly));
+        }
+        function render() {
+            drawGrid();
+            if (state.arsir1) { ctx.fillStyle = 'rgba(52, 152, 219, 0.2)'; ctx.beginPath(); ctx.moveTo(getX(0), getY(0)); ctx.lineTo(getX(20), getY(0)); ctx.lineTo(getX(0), getY(20)); ctx.fill(); }
+            if (state.arsir2) { ctx.fillStyle = 'rgba(231, 76, 60, 0.2)'; ctx.beginPath(); ctx.moveTo(getX(24), getY(0)); ctx.lineTo(getX(max), getY(0)); ctx.lineTo(getX(max), getY(max)); ctx.lineTo(getX(0), getY(max)); ctx.lineTo(getX(0), getY(12)); ctx.fill(); }
+            if (state.irisan) { ctx.fillStyle = 'rgba(46, 204, 113, 0.6)'; ctx.beginPath(); ctx.moveTo(getX(0), getY(12)); ctx.lineTo(getX(16), getY(4)); ctx.lineTo(getX(0), getY(20)); ctx.fill(); ctx.fillStyle = '#27ae60'; ctx.font = 'bold 16px Arial'; ctx.fillText("Daerah Penyelesaian", getX(1), getY(15)); }
+            drawLine(20, 0, 0, 20, '#3498db', 'x + y = 20 (Kapasitas)', 9, 13);
+            drawLine(24, 0, 0, 12, '#e74c3c', 'x + 2y = 24 (Pendapatan)', 17, 5);
+        }
+        function toggle(key, btn) { state[key] = !state[key]; btn.classList.toggle('active'); render(); }
+        window.onload = render;
+    </script>
+</body>
+</html>
